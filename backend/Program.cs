@@ -5,8 +5,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var rawUrl = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("No database connection string found.");
+
+string connectionString = rawUrl;
+
+if (!string.IsNullOrEmpty(rawUrl) && rawUrl.StartsWith("postgres://"))
+{
+    var databaseUri = new Uri(rawUrl);
+    var userInfo = databaseUri.UserInfo.Split(':');
+
+    connectionString = $"Host={databaseUri.Host};" +
+                       $"Port={databaseUri.Port};" +
+                       $"Username={userInfo[0]};" +
+                       $"Password={userInfo[1]};" +
+                       $"Database={databaseUri.LocalPath.TrimStart('/')};" +
+                       "Pooling=true;" +
+                       "SSL Mode=Require;Trust Server Certificate=true;";
+}
 
 builder.Services.AddDbContext<FixKartDbContext>(options =>
     options.UseNpgsql(connectionString));
