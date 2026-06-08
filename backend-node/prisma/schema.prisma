@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Worker {
+  id                 String    @id @default(uuid())
+  name               String
+  category           String
+  avatarUrl          String    @default("")
+  experience         String    @default("")
+  hourlyCharge       Decimal   @db.Decimal(10, 2)
+  availability       String    @default("")
+  location           String
+  responseRate       String    @default("")
+  rating             Decimal   @default(0) @db.Decimal(3, 2)
+  reviewsCount       Int       @default(0)
+  trustScore         Int       @default(0)
+  skillsJson         String    @default("[]")
+  certificationsJson String    @default("[]")
+  portfolioJson      String    @default("[]")
+  about              String    @default("")
+  joinedAt           String    @default("")
+  isVerified         Boolean   @default(false)
+  isActive           Boolean   @default(true)
+  bookings           Booking[]
+
+  @@map("Worker")
+}
+
+model Booking {
+  id             String    @id @default(uuid())
+  customerId     String
+  customerName   String
+  customerPhone  String
+  location       String
+  description    String    @default("")
+  workerId       String
+  worker         Worker    @relation(fields: [workerId], references: [id])
+  category       String
+  bookingTime    DateTime  @default(now())
+  scheduledTime  DateTime?
+  baseRate       Decimal   @db.Decimal(10, 2)
+  status         String    @default("Pending")
+  securityPin    String
+  escrowLocked   Boolean   @default(false)
+
+  @@map("Booking")
+}
