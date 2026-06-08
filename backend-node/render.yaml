@@ -3,6 +3,7 @@ services:
   - type: web
     name: fixkart-api
     runtime: node
+    rootDirectory: backend-node
     region: oregon
     plan: free
     branch: main
